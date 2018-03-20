@@ -5,10 +5,6 @@ volumes:
     driver: local
   consul-server-config:
     driver: local
-  consul-client1-data:
-    driver: local
-  consul-client1-config:
-    driver: local
 
 services:
 
