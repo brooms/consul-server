@@ -1,0 +1,62 @@
+version: '3'
+
+volumes:
+  consul-server-data:
+    driver: local
+  consul-server-config:
+    driver: local
+  consul-client1-data:
+    driver: local
+  consul-client1-config:
+    driver: local
+  consul-client2-data:
+    driver: local
+  consul-client2-config:
+    driver: local
+
+services:
+
+  consul-server-bootstrap:
+    image: consul:latest
+    container_name: consul-server-bootstrap
+    hostname: "consul-server"
+    ports:
+      - "8300:8300"
+      - "8301:8301"
+      - "8302:8302"
+      - "8400:8400"
+      - "8500:8500"
+      - "8600:8600"
+      - "53:8600/udp"
+    volumes:
+      - consul-server-data:/consul/data
+      - consul-server-config:/consul/config
+    command: "agent -server -ui -bootstrap-expect 1 -client 0.0.0.0 -data-dir=/consul/data -config-dir=/consul/config"
+    restart: on-failure
+    network_mode: "bridge"
+
+  consul-client-1:
+    image: consul:latest
+    container_name: consul-client-1
+    hostname: "consul-client-1"
+    volumes:
+      - consul-client1-data:/consul/data
+      - consul-client1-config:/consul/config
+    command: "agent -client=0.0.0.0 -retry-join 172.17.0.1 -data-dir=/consul/data -config-dir=/consul/config"
+    restart: on-failure
+    network_mode: "bridge"
+    depends_on:
+      - consul-server-bootstrap
+
+  consul-client-2:
+    image: consul:latest
+    container_name: consul-client-2
+    hostname: "consul-client-2"
+    volumes:
+      - consul-client2-data:/consul/data
+      - consul-client2-config:/consul/config
+    command: "agent -client=0.0.0.0 -retry-join 172.17.0.1 -data-dir=/consul/data -config-dir=/consul/config"
+    restart: on-failure
+    network_mode: "bridge"
+    depends_on:
+      - consul-server-bootstrap
