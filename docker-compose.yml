@@ -29,7 +29,8 @@ services:
     command: "agent -server -ui -client 0.0.0.0 -bootstrap-expect=1 -advertise 172.16.1.10 -data-dir=/consul/data
     -config-dir=/consul/config"
     restart: on-failure
-    network_mode: "bridge"
+    networks:
+      - default
 
   registrator:
     image: gliderlabs/registrator:latest
@@ -37,6 +38,13 @@ services:
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock
     command: "-resync 120 -retry-attempts -1 -retry-interval 12000 consul://172.16.1.10:8500"
+    restart: on-failure
+    networks:
+      - default
     depends_on:
       - consul-server-bootstrap
-    network_mode: "bridge"
+
+networks:
+  default:
+    driver: bridge
+
